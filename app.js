@@ -315,10 +315,10 @@ setInterval(function() {
 
 setInterval(function() {
     if (seconds == 0) {
-        minutes--;
         if (minutes != 0) {
             seconds = 60;
         }
+        minutes--;
     }
     seconds--;
     io.emit("timer", {
