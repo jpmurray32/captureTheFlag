@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Capture</title>
+    <link href="index.css" rel="stylesheet" type="text/css" />
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/index.js"></script>
+</head>
+<body>
+    <div id="login">
+        <div class="title">Capture!</div>
+        <input type="text" placeholder="Hit Enter To Start" id="name" class="name" />
+    </div>
+    <div id="play">
+        <canvas id="canvas" style="position: absolute;top:0;left:0;">This browser does not support Canvas</canvas>
+        <canvas id="scoreboard" height="100" width="500"></canvas>
+        <canvas id="mini" width="80" height="80"></canvas>
+        <div id="final"></div>
+    </div>
+    <div id="cover"></div>
+</body>
+</html>
