@@ -282,6 +282,7 @@ io.on('connection', function(socket) {
         socket.on('disconnect', function() {
             delete players[socket.id];
             delete names[socket.id];
+            delete users[socket.id];
         });
 
         socket.on('keyPress', function(data) {
