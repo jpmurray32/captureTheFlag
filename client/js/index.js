@@ -37,7 +37,7 @@ socket.on('adminResult', function(data) {
         
         var activeUsers = document.createElement("DIV");
         activeUsers.id = "activeUsers";
-        activeUsers.appendChild(document.createTextNode("Current Active Users : " + data.users));
+        activeUsers.appendChild(document.createTextNode("Current Active Users : " + data.userNum));
         adminDiv.appendChild(activeUsers);
 
         var adminUsers = document.createElement("DIV");

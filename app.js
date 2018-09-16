@@ -125,7 +125,7 @@ io.on('connection', function(socket) {
 
         socket.emit("adminResult", {
             result: success,
-            users: userNum,
+            userNum: userNum,
             adminUsers: adminUsers,
         });
     });
@@ -279,12 +279,6 @@ io.on('connection', function(socket) {
             team: socket.team,
         });
 
-        socket.on('disconnect', function() {
-            delete players[socket.id];
-            delete names[socket.id];
-            delete users[socket.id];
-        });
-
         socket.on('keyPress', function(data) {
             socket.idle = 0;
             if (data.key == "up") {
@@ -297,6 +291,14 @@ io.on('connection', function(socket) {
                 socket.rightPress = data.down;
             }
         });
+    });
+
+    socket.on('disconnect', function() {
+        delete users[socket.id];
+        if (players[socket.id] != null) {
+            delete players[socket.id];
+            delete names[socket.id];
+        }
     });
 });
 
