@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="185903028275-iaspenshmv9vdl8i3espnvtk75no07lh.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
     <title>Capture</title>
     <link href="index.css" rel="stylesheet" type="text/css" />
     <script src="/socket.io/socket.io.js"></script>
@@ -13,6 +16,11 @@
     <div id="login">
         <div class="title">Capture!</div>
         <input type="text" placeholder="Hit Enter To Start" id="name" class="name" />
+        <div class="login">
+            <div class="logint">Login to Admin</div>
+            <div class="loginb"><div class="g-signin2" data-onsuccess="signIn" data-theme="dark"></div></div>
+            <div id="logout" onclick="logout()">Sign Out</div>
+        </div>
     </div>
     <div id="play">
         <canvas id="canvas" style="position: absolute;top:0;left:0;">This browser does not support Canvas</canvas>

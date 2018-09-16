@@ -6,6 +6,33 @@ var minutes = 0;
 var seconds = 0;
 var flags = [];
 
+function signIn(user) {
+    var profile = user.getBasicProfile();
+    socket.emit("adminCheck", {username: profile.U3});
+}
+
+function logout() {
+    gapi.auth2.getAuthInstance().disconnect();
+    var item = document.getElementById('admintitle');
+    if (item != null) {
+        item.parentNode.removeChild(item);
+    }
+}
+
+socket.on('adminResult', function(data) {
+    if (data.result) {
+        alert("Admin Acces Granted")
+        var adminTitle = document.createElement('DIV');
+        adminTitle.appendChild(document.createTextNode("Admin"));
+        adminTitle.className = "admintitle";
+        adminTitle.id = "admintitle";
+        document.body.appendChild(adminTitle);
+    } else {
+        logout();
+        alert("Admin Access Denied");
+    }
+});
+
 var names;
 socket.on('names', function(data) {
     names = data;
@@ -259,9 +286,3 @@ window.onload = function() {
     canvas.width = window.innerWidth - 1;
     canvas.height = window.innerHeight - 1;
 }
-
-setInterval(function() {
-    if (idle >= 100) {
-        location.reload();
-    }
-}, 1000);

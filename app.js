@@ -14,6 +14,8 @@ app.get('/', function(req, res) {
 
 var io = socket(server);
 
+var admins = ['jpmurray32@gmail.com', 'jpmurray.games@gmail.com'];
+
 var players = {};
 var names = {};
 var flags = {};
@@ -81,6 +83,18 @@ io.on('connection', function(socket) {
         nameList.push(names[i]);
     }
     socket.emit('names', nameList);
+
+    socket.on("adminCheck", function(data) {
+        var success = false;
+        for (var i = 0; i < admins.length; i++) {
+            if (data.username == admins[i]) {
+                success = true;
+            }
+        }
+        socket.emit("adminResult", {
+            result: success,
+        });
+    });
 
     socket.on('start', function(data) {
         socket.emit('scores', {red: redscore, blue: bluescore});
@@ -223,7 +237,7 @@ io.on('connection', function(socket) {
                     var changex = (s.x + 15) - (f.x + 5);
                     var changey = (s.y + 15) - (f.y + 5);
                     if (changex**2 + changey**2 <= 40**2 && !p.dead) {
-                        if (p.holding == f || p.holding == null) {
+                        if (s.holding == f || s.holding == null) {
                             holds = true;
                             s.holding = f;
                             f.x = s.x + 10;
