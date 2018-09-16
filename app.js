@@ -70,7 +70,7 @@ for (var i = 0; i < 5; i++) {
 }
 
 for (var i = 0; i < 5; i++) {
-    new flag("blue", Math.floor(Math.random() * 1990), Math.floor(Math.random() * 690) + 1500);
+    new flag("blue", Math.floor(Math.random() * 1990), Math.floor(Math.random() * 690) + 1300);
 }
 
 function speedUp(x, y) {
