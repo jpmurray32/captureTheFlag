@@ -76,11 +76,26 @@ for (var i = 0; i < 5; i++) {
 function speedUp(x, y) {
     this.x = x;
     this.y = y;
+    var checked = false;
+    while (!checked) {
+        checked = true;
+        this.id = Math.random();
+        for (var i in speeds) {
+            if (this.id == speeds[i].id) {
+                checked = false;
+            }
+        }
+    }
+    speeds[this.id] = this;
 
     this.newPos = function() {
         this.x = Math.floor(Math.random() * 1990);
         this.y = Math.floor(Math.random() * 1990);
     }
+}
+
+for (var i = 0; i < 5; i++) {
+    new speedUp(Math.floor(Math.random() * 1990), Math.floor(Math.random() * 1990));
 }
 
 io.on('connection', function(socket) {
@@ -281,6 +296,21 @@ io.on('connection', function(socket) {
             if (!holds) {
                 s.holding = null;
             }
+
+            for (var i in speeds) {
+                var s = socket;
+                var sp = speeds[i];
+
+                var changex = (s.x + 15) - (sp.x + 5);
+                var changey = (s.y + 15) - (sp.y + 5);
+                if (changex**2 + changey**2 <= 40**2 && !p.dead) {
+                    s.speed += 4;
+                    sp.newPos();
+                    setTimeout(function() {
+                        s.speed -= 4;
+                    }, 2000);
+                }
+            }
         }
 
         socket.emit('player', {
@@ -315,6 +345,7 @@ io.on('connection', function(socket) {
 
 setInterval(function() {
     var flagInfo = [];
+    var speedInfo = [];
     for (var i in flags) {
         flags[i].flagCheck();
         flagInfo.push({
@@ -323,7 +354,14 @@ setInterval(function() {
             y: flags[i].y,
         })
     }
+    for (var i in speeds) {
+        speedInfo.push({
+            x: speeds[i].x,
+            y: speeds[i].y,
+        });
+    }
     for (var i in players) {
+        players[i].emit('speedUps', speedInfo);
         players[i].emit('flags', flagInfo);
     }
     for (var i in players) {

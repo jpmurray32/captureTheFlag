@@ -5,6 +5,7 @@ var blueScore = 0;
 var minutes = 0;
 var seconds = 0;
 var flags = [];
+var speeds = [];
 
 function signIn(user) {
     var profile = user.getBasicProfile();
@@ -113,6 +114,14 @@ var drawFlag = function(ctx, color, x, y, w, h) {
     ctx.closePath();
 }
 
+var drawSpeed = function(ctx, x, y, w, h) {
+    ctx.beginPath();
+    ctx.fillStyle = "lightgreen";
+    ctx.arc(x + w/2, y + h/2, w, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.closePath();
+}
+
 function posx(x) {
     return ((window.innerWidth / 2 - 15) + (x - player.x));
 }
@@ -205,6 +214,9 @@ socket.on('players', function(data) {
     for (var i = 0; i < flags.length; i++) {
         drawFlag(ctx, flags[i].team, posx(flags[i].x), posy(flags[i].y), 10, 10);
     }
+    for (var i = 0; i < speeds.length; i++) {
+        drawSpeed(ctx, posx(speeds[i].x), posy(speeds[i].y), 10, 10);
+    }
 });
 
 socket.on('player', function(data) {
@@ -231,12 +243,17 @@ socket.on("scoreboard", function(data) {
     
         setTimeout(function() {
             document.getElementById('final').innerHTML = "";
+            console.log("yeet");
         }, 3000);
     }
 });
 
 socket.on('flags', function(data) {
     flags = data;
+});
+
+socket.on('speedUps', function(data) {
+    speeds = data;
 });
 
 socket.on('idle', function() {
