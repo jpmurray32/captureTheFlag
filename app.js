@@ -57,7 +57,7 @@ function flag(team, x, y) {
     this.newPos = function() {
         if (this.team == "blue") {
             this.x = Math.floor(Math.random() * 1990);
-            this.y = Math.floor(Math.random() * 690) + 1500;
+            this.y = Math.floor(Math.random() * 690) + 1300;
         } else {
             this.y = Math.floor(Math.random() * 690);
             this.x = Math.floor(Math.random() * 1990);
