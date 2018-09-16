@@ -14,11 +14,13 @@ app.get('/', function(req, res) {
 
 var io = socket(server);
 
-var admins = ['jpmurray32@gmail.com', 'jpmurray.games@gmail.com'];
+var admins = ['jpmurray32@gmail.com', 'jpmurray.games@gmail.com', 'hphuah@cps.edu'];
 
 var players = {};
+var users = {};
 var names = {};
 var flags = {};
+var speeds = {};
 var redscore = 0;
 var bluescore = 0;
 var minutes = 15;
@@ -48,34 +50,38 @@ function flag(team, x, y) {
             } else {
                 bluescore++;
             }
-            io.emit("scores", {red: redscore, blue: bluescore});
+            io.emit("scoreboard", {red: redscore, blue: bluescore, minutes: minutes, seconds: seconds});
             this.newPos();
         }
     }
     this.newPos = function() {
         if (this.team == "blue") {
             this.x = Math.floor(Math.random() * 1990);
-            this.y = Math.floor(Math.random() * 490) + 1500;
+            this.y = Math.floor(Math.random() * 690) + 1500;
         } else {
-            this.y = Math.floor(Math.random() * 490);
+            this.y = Math.floor(Math.random() * 690);
             this.x = Math.floor(Math.random() * 1990);
         }
     }
 }
 
-var redone = new flag("red", 0, 0);
-redone.newPos();
-var redtwo = new flag("red", 0, 0);
-redtwo.newPos();
-var redthree = new flag("red", 0, 0);
-redthree.newPos();
+for (var i = 0; i < 5; i++) {
+    new flag("red", Math.floor(Math.random() * 1990), Math.floor(Math.random() * 690));
+}
 
-var blueone = new flag("blue", 0, 0);
-blueone.newPos();
-var bluetwo = new flag("blue", 0, 0);
-bluetwo.newPos();
-var bluethree = new flag("blue", 0, 0);
-bluethree.newPos();
+for (var i = 0; i < 5; i++) {
+    new flag("blue", Math.floor(Math.random() * 1990), Math.floor(Math.random() * 690) + 1500);
+}
+
+function speedUp(x, y) {
+    this.x = x;
+    this.y = y;
+
+    this.newPos = function() {
+        this.x = Math.floor(Math.random() * 1990);
+        this.y = Math.floor(Math.random() * 1990);
+    }
+}
 
 io.on('connection', function(socket) {
     var nameList = [];
@@ -84,31 +90,47 @@ io.on('connection', function(socket) {
     }
     socket.emit('names', nameList);
 
+    var checked = false;
+    while (!checked) {
+        checked = true;
+        socket.id = Math.random();
+        for (var i in users) {
+            if (users[i].id == socket.id) {
+                checked = false;
+            }
+        }
+    }
+
+    users[socket.id] = socket;
+
+    socket.admin = false;
+
     socket.on("adminCheck", function(data) {
         var success = false;
         for (var i = 0; i < admins.length; i++) {
             if (data.username == admins[i]) {
                 success = true;
+                socket.admin = true;
             }
         }
+
+        var userNum = 0;
+        var adminUsers = 0;
+        for (var i in users) {
+            userNum++;
+            if (users[i].admin) {
+                adminUsers++;
+            }
+        }
+
         socket.emit("adminResult", {
             result: success,
+            users: userNum,
+            adminUsers: adminUsers,
         });
     });
 
     socket.on('start', function(data) {
-        socket.emit('scores', {red: redscore, blue: bluescore});
-
-        var checked = false;
-        while (!checked) {
-            checked = true;
-            socket.id = Math.random();
-            for (var i in players) {
-                if (players[i].id == socket.id) {
-                    checked = false;
-                }
-            }
-        }
         players[socket.id] = socket;
         names[socket.id] = data.name;
         socket.dead = false;
@@ -334,16 +356,13 @@ setInterval(function() {
         minutes--;
     }
     seconds--;
-    io.emit("timer", {
-        minutes: minutes,
-        seconds: seconds,
-    });
+    io.emit("scoreboard", {red: redscore, blue: bluescore, minutes:minutes, seconds:seconds,});
 
     if (minutes == 0 && seconds == 0) {
         minutes = 15;
         redscore = 0;
         bluescore = 0;
-        io.emit("scores", {red: redscore, blue: bluescore});
+        io.emit("scoreboard", {red: redscore, blue: bluescore, minutes:minutes, seconds:seconds,});
     }
 
     for (var i in players) {

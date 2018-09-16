@@ -13,9 +13,13 @@ function signIn(user) {
 
 function logout() {
     gapi.auth2.getAuthInstance().disconnect();
-    var item = document.getElementById('admintitle');
-    if (item != null) {
-        item.parentNode.removeChild(item);
+    var title = document.getElementById('admintitle');
+    var adminDB = document.getElementById('adminDB');
+    var adminDiv = document.getElementById('adminDiv');
+    if (title != null) {
+        title.parentNode.removeChild(title);
+        document.body.removeChild(adminDB);
+        adminDiv.parentNode.removeChild(adminDiv);
     }
 }
 
@@ -26,6 +30,38 @@ socket.on('adminResult', function(data) {
         adminTitle.className = "admintitle";
         adminTitle.id = "admintitle";
         document.getElementById('login').appendChild(adminTitle);
+        
+        var adminDiv = document.createElement("DIV");
+        adminDiv.id = "adminDiv";
+        adminDiv.style.display = "none";
+        
+        var activeUsers = document.createElement("DIV");
+        activeUsers.id = "activeUsers";
+        activeUsers.appendChild(document.createTextNode("Current Active Users : " + data.users));
+        adminDiv.appendChild(activeUsers);
+
+        var adminUsers = document.createElement("DIV");
+        adminUsers.id = "adminUsers";
+        adminUsers.appendChild(document.createTextNode("Current Admin Users : " + data.adminUsers));
+        adminDiv.appendChild(adminUsers);
+
+        document.body.appendChild(adminDiv);
+
+        var adminDButton = document.createElement("DIV");
+        adminDButton.id = "adminDB";
+        adminDButton.onclick = function() {
+            if (document.getElementById('adminDiv').style.display == "none") {
+                document.getElementById('adminDB').innerHTML = "Return to Home";
+                document.getElementById('login').style.display = "none";
+                document.getElementById('adminDiv').style.display = "block";
+            } else {
+                document.getElementById('adminDB').innerHTML = "Admin Data";
+                document.getElementById('adminDiv').style.display = "none";
+                document.getElementById('login').style.display = "block";
+            }
+        }
+        adminDButton.appendChild(document.createTextNode("Admin Data"));
+        document.body.appendChild(adminDButton);
     } else {
         logout();
         alert("Admin Access Denied");
@@ -78,13 +114,7 @@ function posy(y) {
     return ((window.innerHeight / 2 - 15) + (y - player.y));
 }
 
-socket.on('players', function(data) {
-    var canvas = document.getElementById('canvas');
-    var ctx = canvas.getContext('2d');
-    var mini = document.getElementById('mini');
-    var mctx = mini.getContext('2d');
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    mctx.clearRect(0, 0, 80, 80);
+function scoreboard(red, blue, minutes, seconds) {
     var scoreboard = document.getElementById('scoreboard');
     var sctx = scoreboard.getContext('2d');
     sctx.beginPath();
@@ -92,12 +122,12 @@ socket.on('players', function(data) {
     sctx.fillRect(0, 0, 200, 100);
     sctx.fillStyle = "white";
     sctx.font = "bolder 60px Verdana";
-    sctx.fillText(redScore.toString(), 80, 70);
+    sctx.fillText(red.toString(), 80, 70);
     sctx.fillStyle = "blue";
     sctx.fillRect(300, 0, 200, 100);
     sctx.fillStyle = "white";
     sctx.font = "bolder 60px Verdana";
-    sctx.fillText(blueScore.toString(), 380, 70);
+    sctx.fillText(blue.toString(), 380, 70);
     sctx.fillStyle = "purple";
     sctx.fillRect(200, 25, 100, 50);
     sctx.fillStyle = "white";
@@ -115,6 +145,15 @@ socket.on('players', function(data) {
             sctx.fillText("0" + minutes + ":" + seconds, 200, 60);
         }
     }
+}
+
+socket.on('players', function(data) {
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var mini = document.getElementById('mini');
+    var mctx = mini.getContext('2d');
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    mctx.clearRect(0, 0, 80, 80);
     for (var i = 0; i < data.length; i++) {
         if (data[i].name == player.name) {
             player.x = data[i].x;
@@ -172,27 +211,13 @@ socket.on('collided', function() {
     }
 });
 
-socket.on('scores', function(data) {
-    redScore = data.red;
-    blueScore = data.blue;
-});
-
-socket.on('flags', function(data) {
-    flags = data;
-});
-
-socket.on('idle', function() {
-    location.reload();
-});
-
-socket.on('timer', function(data) {
-    minutes = data.minutes;
-    seconds = data.seconds;
-    if (minutes == 0 && seconds == 0) {
-        if (redScore > blueScore) {
-            document.getElementById("final").innerHTML = "Red Wins<br>" + redScore + " to " + blueScore;
-        } else if (blueScore > redScore) {
-            document.getElementById("final").innerHTML = "Blue Wins<br>" + blueScore + " to " + redScore;
+socket.on("scoreboard", function(data) {
+    scoreboard(data.red, data.blue, data.minutes, data.seconds);
+    if (data.minutes == 0 && data.seconds == 0) {
+        if (data.red > data.blue) {
+            document.getElementById("final").innerHTML = "Red Wins<br>" + data.red + " to " + data.blue;
+        } else if (data.blue > data.blue) {
+            document.getElementById("final").innerHTML = "Blue Wins<br>" + data.blue + " to " + data.red;
         } else {
             document.getElementById("final").innerHTML = "It's a tie!";
         }
@@ -201,6 +226,14 @@ socket.on('timer', function(data) {
             document.getElementById('final').innerHTML = "";
         }, 3000);
     }
+});
+
+socket.on('flags', function(data) {
+    flags = data;
+});
+
+socket.on('idle', function() {
+    location.reload();
 });
 
 function dead() {
@@ -235,7 +268,7 @@ window.onkeydown = function(e) {
     }
 
     var input = document.getElementById('name').value;
-    if (e.keyCode == 13 && input.length > 0) {
+    if (e.keyCode == 13 && input.length > 0 && document.getElementById('login').style.display == "block") {
         var safe = true;
         for (var i = 0; i < input.length; i++) {
             if (input.charAt(i) == "<") {
@@ -254,6 +287,8 @@ window.onkeydown = function(e) {
             input = "";
             document.getElementById('play').style.display = "block";
             document.getElementById('login').style.display = "none";
+            document.getElementById('adminDB').style.display = "none";
+            document.getElementById('adminDiv').style.display = "none";
         }
     }
 }
