@@ -115,7 +115,6 @@ io.on('connection', function(socket) {
         socket.holding = null;
 
         socket.idle = 0;
-        socket.count = 0;
     
         var red = 0;
         var blue = 0;
@@ -345,5 +344,13 @@ setInterval(function() {
         redscore = 0;
         bluescore = 0;
         io.emit("scores", {red: redscore, blue: bluescore});
+    }
+
+    for (var i in players) {
+        var p = players[i];
+        p.idle++;
+        if (p.idle >= 120) {
+            p.emit('idle');
+        }
     }
 }, 1000);

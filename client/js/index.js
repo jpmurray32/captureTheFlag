@@ -21,12 +21,11 @@ function logout() {
 
 socket.on('adminResult', function(data) {
     if (data.result) {
-        alert("Admin Acces Granted")
         var adminTitle = document.createElement('DIV');
         adminTitle.appendChild(document.createTextNode("Admin"));
         adminTitle.className = "admintitle";
         adminTitle.id = "admintitle";
-        document.body.appendChild(adminTitle);
+        document.getElementById('login').appendChild(adminTitle);
     } else {
         logout();
         alert("Admin Access Denied");
@@ -285,4 +284,5 @@ window.onload = function() {
     var canvas = document.getElementById('canvas');
     canvas.width = window.innerWidth - 1;
     canvas.height = window.innerHeight - 1;
+    document.getElementById('name').focus();
 }
