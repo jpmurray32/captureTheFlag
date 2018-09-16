@@ -105,15 +105,7 @@ io.on('connection', function(socket) {
 
     socket.admin = false;
 
-    socket.on("adminCheck", function(data) {
-        var success = false;
-        for (var i = 0; i < admins.length; i++) {
-            if (data.username == admins[i]) {
-                success = true;
-                socket.admin = true;
-            }
-        }
-
+    function adminData() {
         var userNum = 0;
         var adminUsers = 0;
         for (var i in users) {
@@ -123,10 +115,29 @@ io.on('connection', function(socket) {
             }
         }
 
+        var data = [userNum, adminUsers];
+        return data;
+    }
+
+    socket.on('adminData', function() {
+        var data = adminData();
+        socket.emit('adminDR', {
+            userNum: data[0],
+            adminUsers: data[1],
+        });
+    });
+
+    socket.on("adminCheck", function(data) {
+        var success = false;
+        for (var i = 0; i < admins.length; i++) {
+            if (data.username == admins[i]) {
+                success = true;
+                socket.admin = true;
+            }
+        }
+
         socket.emit("adminResult", {
             result: success,
-            userNum: userNum,
-            adminUsers: adminUsers,
         });
     });
 

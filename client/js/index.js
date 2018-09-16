@@ -37,12 +37,12 @@ socket.on('adminResult', function(data) {
         
         var activeUsers = document.createElement("DIV");
         activeUsers.id = "activeUsers";
-        activeUsers.appendChild(document.createTextNode("Current Active Users : " + data.userNum));
+        activeUsers.appendChild(document.createTextNode("Current Active Users : "));
         adminDiv.appendChild(activeUsers);
 
         var adminUsers = document.createElement("DIV");
         adminUsers.id = "adminUsers";
-        adminUsers.appendChild(document.createTextNode("Current Admin Users : " + data.adminUsers));
+        adminUsers.appendChild(document.createTextNode("Current Admin Users : "));
         adminDiv.appendChild(adminUsers);
 
         document.body.appendChild(adminDiv);
@@ -50,21 +50,28 @@ socket.on('adminResult', function(data) {
         var adminDButton = document.createElement("DIV");
         adminDButton.id = "adminDB";
         adminDButton.onclick = function() {
-            if (document.getElementById('adminDiv').style.display == "none") {
-                document.getElementById('adminDB').innerHTML = "Return to Home";
-                document.getElementById('login').style.display = "none";
-                document.getElementById('adminDiv').style.display = "block";
-            } else {
-                document.getElementById('adminDB').innerHTML = "Admin Data";
-                document.getElementById('adminDiv').style.display = "none";
-                document.getElementById('login').style.display = "block";
-            }
+            socket.emit('adminData');
+
         }
         adminDButton.appendChild(document.createTextNode("Admin Data"));
         document.body.appendChild(adminDButton);
     } else {
         logout();
         alert("Admin Access Denied");
+    }
+});
+
+socket.on('adminDR', function(data) {
+    document.getElementById('activeUsers').innerHTML = "Current Active Users : " + data.userNum;
+    document.getElementById('adminUsers').innerHTML = "Current Admin Users : " + data.adminUsers;
+    if (document.getElementById('adminDiv').style.display == "none") {
+        document.getElementById('adminDB').innerHTML = "Return to Home";
+        document.getElementById('login').style.display = "none";
+        document.getElementById('adminDiv').style.display = "block";
+    } else {
+        document.getElementById('adminDB').innerHTML = "Admin Data";
+        document.getElementById('adminDiv').style.display = "none";
+        document.getElementById('login').style.display = "block";
     }
 });
 
