@@ -14,7 +14,7 @@ app.get('/', function(req, res) {
 
 var io = socket(server);
 
-var admins = ['jpmurray32@gmail.com', 'jpmurray.games@gmail.com', 'hphuah@cps.edu'];
+var admins = ['jpmurray32@gmail.com', 'jpmurray.games@gmail.com', 'hphuah@cps.edu', 'citylionone@gmail.com'];
 
 var players = {};
 var users = {};
@@ -304,11 +304,11 @@ io.on('connection', function(socket) {
                 var changex = (s.x + 15) - (sp.x + 5);
                 var changey = (s.y + 15) - (sp.y + 5);
                 if (changex**2 + changey**2 <= 40**2 && !p.dead) {
-                    s.speed += 4;
+                    s.speed += 2;
                     sp.newPos();
                     setTimeout(function() {
-                        s.speed -= 4;
-                    }, 2000);
+                        s.speed -= 2;
+                    }, 4000);
                 }
             }
         }
