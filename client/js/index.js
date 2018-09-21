@@ -81,9 +81,10 @@ socket.on('names', function(data) {
     names = data;
 });
 
-function object(name, team, x, y, w, h) {
+function object(name, team, id, x, y, w, h) {
     this.name = name;
     this.team = team;
+    this.id = id;
     this.x = x;
     this.y = y;
     this.w = w;
@@ -171,7 +172,7 @@ socket.on('players', function(data) {
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     mctx.clearRect(0, 0, 80, 80);
     for (var i = 0; i < data.length; i++) {
-        if (data[i].name == player.name) {
+        if (data[i].id == player.id) {
             player.x = data[i].x;
             player.y = data[i].y;
             ctx.beginPath();
@@ -220,7 +221,7 @@ socket.on('players', function(data) {
 });
 
 socket.on('player', function(data) {
-    player = new object(data.name, data.team, data.x, data.y, 30, 30);
+    player = new object(data.name, data.team, data.id, data.x, data.y, 30, 30);
 });
 
 socket.on('collided', function() {
@@ -297,13 +298,6 @@ window.onkeydown = function(e) {
         for (var i = 0; i < input.length; i++) {
             if (input.charAt(i) == "<") {
                 safe = false;
-            }
-        }
-        for (var i = 0; i < names.length; i++) {
-            if (input == names[i]) {
-                safe = false;
-                alert("Sorry, that name is in use.");
-                input = "";
             }
         }
         if (safe) {

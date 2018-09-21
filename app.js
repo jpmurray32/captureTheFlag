@@ -99,11 +99,6 @@ for (var i = 0; i < 5; i++) {
 }
 
 io.on('connection', function(socket) {
-    var nameList = [];
-    for (var i in names) {
-        nameList.push(names[i]);
-    }
-    socket.emit('names', nameList);
 
     var checked = false;
     while (!checked) {
@@ -252,11 +247,11 @@ io.on('connection', function(socket) {
                     var changey = (s.y + 15) - (p.y + 15);
                     if (changex**2 + changey**2 <= 60**2 && !p.dead) {
                         if (socket.y > 950 && socket.team == "red" && p.team != s.team || socket.y < 1000 && socket.team == "blue" && p.team != s.team) {
-                            socket.dead = true;
                             if (socket.holding != null) {
                                 socket.holding.newPos();
                             }
                             socket.emit("collided");
+                            socket.dead = true;
                         }
                     }
                 }
@@ -318,6 +313,7 @@ io.on('connection', function(socket) {
             x: socket.x,
             y: socket.y,
             team: socket.team,
+            id: socket.id,
         });
 
         socket.on('keyPress', function(data) {
@@ -373,6 +369,7 @@ setInterval(function() {
         p.info.push({
             x: p.x,
             y: p.y,
+            id: p.id,
             name: p.name,
             team: p.team,
             dead: p.dead,
@@ -382,6 +379,7 @@ setInterval(function() {
                 p.info.push({
                     x: players[o].x,
                     y: players[o].y,
+                    id:players[o].id,
                     name: players[o].name,
                     team: players[o].team,
                     dead: players[o].dead,
