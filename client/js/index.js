@@ -6,6 +6,7 @@ var minutes = 0;
 var seconds = 0;
 var flags = [];
 var speeds = [];
+var bricks = [];
 
 function signIn(user) {
     var profile = user.getBasicProfile();
@@ -123,6 +124,16 @@ var drawSpeed = function(ctx, x, y, w, h) {
     ctx.closePath();
 }
 
+var drawBrick = function(ctx, x, y, w, h) {
+    ctx.beginPath();
+    ctx.fillStyle = "brown";
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = "black";
+    ctx.rect(x, y, w, h);
+    ctx.stroke();
+    ctx.closePath();
+}
+
 function posx(x) {
     return ((window.innerWidth / 2 - 15) + (x - player.x));
 }
@@ -218,6 +229,9 @@ socket.on('players', function(data) {
     for (var i = 0; i < speeds.length; i++) {
         drawSpeed(ctx, posx(speeds[i].x), posy(speeds[i].y), 10, 10);
     }
+    for (var i = 0; i < bricks.length; i++) {
+        drawBrick(ctx, posx(bricks[i].x), posy(bricks[i].y), bricks[i].w, bricks[i].h);
+    }
 });
 
 socket.on('player', function(data) {
@@ -257,6 +271,10 @@ socket.on('speedUps', function(data) {
     speeds = data;
 });
 
+socket.on('bricks', function(data) {
+    bricks = data;
+});
+
 socket.on('idle', function() {
     location.reload();
 });
@@ -283,13 +301,13 @@ function play(username) {
 window.onkeydown = function(e) {
     idle = 0;
     if (e.keyCode == 38 || e.keyCode == 87) {
-        socket.emit('keyPress', {key: "up", down: true});
+        socket.emit('keyPress', {key: "up"});
     } else if (e.keyCode == 40 || e.keyCode == 83) {
-        socket.emit('keyPress', {key: "down", down: true});
+        socket.emit('keyPress', {key: "down"});
     } else if (e.keyCode == 37 || e.keyCode == 65) {
-        socket.emit('keyPress', {key: "left", down: true});
+        socket.emit('keyPress', {key: "left"});
     } else if (e.keyCode == 39 || e.keyCode == 68) {
-        socket.emit('keyPress', {key: "right", down: true});
+        socket.emit('keyPress', {key: "right"});
     }
 
     var input = document.getElementById('name').value;
@@ -311,18 +329,6 @@ window.onkeydown = function(e) {
     }
 }
 
-window.onkeyup = function(e) {
-    if (e.keyCode == 38 || e.keyCode == 87) {
-        socket.emit('keyPress', {key: "up", down: false});
-    } else if (e.keyCode == 40 || e.keyCode == 83) {
-        socket.emit('keyPress', {key: "down", down: false});
-    } else if (e.keyCode == 37 || e.keyCode == 65) {
-        socket.emit('keyPress', {key: "left", down: false});
-    } else if (e.keyCode == 39 || e.keyCode == 68) {
-        socket.emit('keyPress', {key: "right", down: false});
-    }
-}
-
 window.onunload = function() {
     socket.emit('disconnect');
 }
@@ -337,5 +343,7 @@ window.onload = function() {
     var canvas = document.getElementById('canvas');
     canvas.width = window.innerWidth - 1;
     canvas.height = window.innerHeight - 1;
+    canvas.style.width  = window.innerWidth - 1 + "px";
+    canvas.style.height  = window.innerHeight - 1 + "px";
     document.getElementById('name').focus();
 }

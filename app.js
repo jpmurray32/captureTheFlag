@@ -21,6 +21,8 @@ var users = {};
 var names = {};
 var flags = {};
 var speeds = {};
+var bricks = {};
+var brickInfo = [];
 var redscore = 0;
 var bluescore = 0;
 var minutes = 15;
@@ -98,6 +100,40 @@ for (var i = 0; i < 5; i++) {
     new speedUp(Math.floor(Math.random() * 1990), Math.floor(Math.random() * 1990));
 }
 
+function brick(x, y) {
+    this.x = x;
+    this.y = y;
+    this.w = 100;
+    this.h = 100;
+    this.cx = x+ 50;
+    this.cy = y+ 50;
+
+    var checked = false;
+    while (!checked) {
+        checked = true;
+        this.id = Math.random();
+        for (var i in bricks) {
+            if (this.id == bricks[i].id) {
+                checked = false;
+            }
+        }
+    }
+    bricks[this.id] = this;
+    brickInfo.push({
+        x: this.x,
+        y: this.y,
+        w: this.w,
+        h: this.h,
+    });
+}
+
+new brick(300, 300);
+new brick(1600, 300);
+new brick(300, 1600);
+new brick(1600, 1600);
+new brick(600, 950);
+new brick(1300, 950);
+
 io.on('connection', function(socket) {
 
     var checked = false;
@@ -152,6 +188,7 @@ io.on('connection', function(socket) {
     });
 
     socket.on('start', function(data) {
+        socket.emit('bricks', brickInfo);
         players[socket.id] = socket;
         names[socket.id] = data.name;
         socket.dead = false;
@@ -183,6 +220,7 @@ io.on('connection', function(socket) {
         } else {
             socket.y = Math.floor(Math.random() * 948 + 1001);
         }
+        socket.r = 50;
 
         socket.info = [];
 
@@ -190,7 +228,7 @@ io.on('connection', function(socket) {
         socket.downPress = false;
         socket.leftPress = false;
         socket.rightPress = false;
-        socket.speed = 8;
+        socket.speed = 4;
         socket.vel = {
             up: 0,
             down: 0,
@@ -235,6 +273,10 @@ io.on('connection', function(socket) {
             socket.vel.down *= 0.93;
             socket.vel.left *= 0.93;
             socket.vel.right *= 0.93;
+        }
+
+        socket.toDegrees = function(angle) {
+            return angle * (180 / Math.PI);
         }
 
         socket.collision = function() {
@@ -306,6 +348,42 @@ io.on('connection', function(socket) {
                     }, 4000);
                 }
             }
+
+            for (var i in bricks) {
+                var collided = false;
+                var s = socket;
+                var b = bricks[i];
+
+                var distx = Math.abs(s.x - b.x-b.w/2);
+                var disty = Math.abs(s.y - b.y-b.h/2);
+
+                if (distx <= (b.w/2 + s.r) && disty <= (b.h/2 + s.r)) {
+                    if (distx <= (b.w/2) || disty <= (b.h/2)) {
+                        collided = true;
+                    }
+                }
+
+                var dx=distx-b.w/2;
+                var dy=disty-b.h/2;
+                if (dx*dx+dy*dy<=(s.r*s.r)) {
+                    collided = true;
+                }
+
+                if (collided) {
+                    if (s.y + 2 * s.r >= b.y && s.y < b.y) {
+                        s.vel.down = 0;
+                    }
+                    if (s.y <= b.y + b.w && s.y + 2 * s.r > b.y) {
+                        s.vel.up = 0;
+                    }
+                    if (s.x + 2 * s.r >= b.x && s.x < b.x) {
+                        s.vel.right = 0;
+                    }
+                    if (s.x <= b.x + b.w && s.x + 2 * s.r > b.x) {
+                        s.vel.left = 0;
+                    }
+                }
+            }
         }
 
         socket.emit('player', {
@@ -342,6 +420,7 @@ io.on('connection', function(socket) {
 setInterval(function() {
     var flagInfo = [];
     var speedInfo = [];
+    var info = [];
     for (var i in flags) {
         flags[i].flagCheck();
         flagInfo.push({
@@ -362,11 +441,20 @@ setInterval(function() {
     }
     for (var i in players) {
         var p = players[i];
-        p.info = [];
+        //p.info = [];
         p.positionCheck();
         p.collision();
         p.positionChange();
-        p.info.push({
+        info.push({
+            x: p.x,
+            y: p.y,
+            id: p.id,
+            name: p.name,
+            team: p.team,
+            dead: p.dead,
+        });
+        
+        /*p.info.push({
             x: p.x,
             y: p.y,
             id: p.id,
@@ -386,17 +474,13 @@ setInterval(function() {
                 });
             }
         }
-        p.emit('players', p.info);
-        p.count++;
-        if (p.count == 24) {
-            p.count = 0;
-            p.idle++;
-            if (p.idle >= 60) {
-                p.emit('idle');
-            }
-        }
+        p.emit('players', p.info);*/
     }
-}, 1000/24);
+    for (var i in players) {
+        var p = players[i];
+        p.emit('players', info);
+    }
+}, 1000/48);
 
 setInterval(function() {
     if (seconds == 0) {
@@ -406,12 +490,13 @@ setInterval(function() {
         minutes--;
     }
     seconds--;
-    io.emit("scoreboard", {red: redscore, blue: bluescore, minutes:minutes, seconds:seconds,});
 
     if (minutes == 0 && seconds == 0) {
+        io.emit("scoreboard", {red: redscore, blue: bluescore, minutes:minutes, seconds:seconds,});
         minutes = 15;
         redscore = 0;
         bluescore = 0;
+    } else {
         io.emit("scoreboard", {red: redscore, blue: bluescore, minutes:minutes, seconds:seconds,});
     }
 
